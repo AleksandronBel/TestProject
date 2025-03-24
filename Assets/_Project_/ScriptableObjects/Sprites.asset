@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 906647fee4fbb80409b15f5043ca540e, type: 3}
+  m_Name: Sprites
+  m_EditorClassIdentifier: 
+  Sprites:
+  - Name: Cube 1
+    Sprite: {fileID: 21300000, guid: 0372db61fc13c8b4fb9d61af9910de1b, type: 3}
+  - Name: Cube 2
+    Sprite: {fileID: 21300000, guid: 7adc0ee518e97914bb4ff1a0e607f1dd, type: 3}
+  - Name: Cube 3
+    Sprite: {fileID: 21300000, guid: 1e0c3a4661fcaa6479ffe8f83b893fdc, type: 3}
+  - Name: Cube 4
+    Sprite: {fileID: 21300000, guid: 547b8f72312590a4f82643f34687a4fb, type: 3}
+  - Name: Cube 5
+    Sprite: {fileID: 21300000, guid: c4bcef05d220ba34ba86e0869a0ba0d7, type: 3}
+  - Name: Cube 6
+    Sprite: {fileID: 21300000, guid: f39f1cc4767cd534ca0f5d1e6271dfc8, type: 3}
+  - Name: Cube 7
+    Sprite: {fileID: 21300000, guid: 5fe55b91e42d8a945b11227e6c12ad4e, type: 3}
+  - Name: Cube 8
+    Sprite: {fileID: 21300000, guid: 8d5cf88696281ae4cbb351165f20745f, type: 3}
+  - Name: Cube 9
+    Sprite: {fileID: 21300000, guid: 86f171567809b7047a675535414b9fb4, type: 3}
+  - Name: Cube 10
+    Sprite: {fileID: 21300000, guid: 70abf06e34e15cf4fb9c18ac45865918, type: 3}
+  - Name: Cube 11
+    Sprite: {fileID: 21300000, guid: df788da056a833242abd51971001406c, type: 3}
+  - Name: Cube 12
+    Sprite: {fileID: 21300000, guid: 8db8ed099f599504e987ec13c44d361d, type: 3}
+  - Name: Cube 13
+    Sprite: {fileID: 21300000, guid: 5ecb17a435443a44a8816972178cffe8, type: 3}
+  - Name: Cube 14
+    Sprite: {fileID: 21300000, guid: d0ee97ab6923d89489b370787841dda9, type: 3}
+  - Name: Cube 15
+    Sprite: {fileID: 21300000, guid: 4f24872ae01e3274c896cb2a3326a81b, type: 3}
+  - Name: Cube 16
+    Sprite: {fileID: 21300000, guid: 70c87da1a30d0954994b18a8cd48e6d8, type: 3}
+  - Name: Cube 17
+    Sprite: {fileID: 21300000, guid: f7965b89d0c626d4683c6bc82ffa727c, type: 3}
+  - Name: Cube 18
+    Sprite: {fileID: 21300000, guid: 38630dae082c208428b0743eb370ca43, type: 3}
+  - Name: Cube 19
+    Sprite: {fileID: 21300000, guid: 52f0894ab2e4e424ba1de3a3cb94aa51, type: 3}
+  - Name: Cube 20
+    Sprite: {fileID: 21300000, guid: 2a63a461b81fcb84ba9eced1fe774d19, type: 3}

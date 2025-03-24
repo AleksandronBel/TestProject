@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Localization Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Localization
+  m_TableCollectionNameGuidString: 917ab4e162285454a8d67fd62f897aef
+  m_Entries:
+  - m_Id: 258800418816
+    m_Key: figure_placed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1147263057920
+    m_Key: figure_out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1149364404224
+    m_Key: figure_disappear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1151214092288
+    m_Key: tower_height_limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 785992293613568
+    m_Key: reset_save
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 569349602648260632
+  references:
+    version: 2
+    RefIds:
+    - rid: 569349602648260632
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1742575981092
