@@ -1,4 +1,6 @@
-using MessagePipe;
+﻿using MessagePipe;
+using UnityEngine;
+using UnityEngine.EventSystems;
 using Zenject;
 
 public enum MessageType
@@ -11,35 +13,76 @@ public enum MessageType
 
 public static class FigureActionMessage
 {
-    public readonly struct FigurePlaced : IMessage
+    public record BaseFigureDragStart
     {
-        public MessageType MessageType { get; }
-        public FigurePlaced(MessageType messageType) => MessageType = messageType;
+        public BaseFigureView Figure { get; }
+
+        public BaseFigureDragStart(BaseFigureView figure)
+        {
+            Figure = figure;
+        }
     }
 
-    public readonly struct FigureOut : IMessage
+    public record FigureDragging
     {
-        public MessageType MessageType { get; }
-        public FigureOut(MessageType messageType) => MessageType = messageType;
+        public PointerEventData PointerEventData;
+
+        public FigureDragging(PointerEventData pointerEventData)
+        {
+            PointerEventData = pointerEventData;
+        }
     }
 
-    public readonly struct FigureDisappear : IMessage
+    public record BaseFigureDragEnd();
+
+    public record FigureForBuildTowerDragEnd
     {
-        public MessageType MessageType { get; }
-        public FigureDisappear(MessageType messageType) => MessageType = messageType;
+        public PointerEventData PointerEventData { get; }
+        public Transform Transform { get; }
+        public RectTransform RectTransform { get; }
+
+        public FigureForBuildTowerDragEnd(PointerEventData pointerEventData, Transform transform, RectTransform rectTransform)
+        {
+            PointerEventData = pointerEventData;
+            Transform = transform;
+            RectTransform = rectTransform;
+        }
     }
 
-    public readonly struct TowerHeightLimit : IMessage
+    public record DraggingObjectOutFromTower
+    {
+        public DraggingObject Figure { get; }
+
+        public DraggingObjectOutFromTower(DraggingObject figure)
+        {
+            Figure = figure;
+        }
+    }
+
+    public record BaseFigureObjectOut
+    {
+        public BaseFigureView Figure { get; }
+
+        public BaseFigureObjectOut(BaseFigureView figure)
+        {
+            Figure = figure;
+        }
+    }
+
+    public record FigureAction : IMessage
     {
         public MessageType MessageType { get; }
-        public TowerHeightLimit(MessageType messageType) => MessageType = messageType;
+        public FigureAction(MessageType messageType) => MessageType = messageType;
     }
 
     public static void Install(DiContainer container, MessagePipeOptions options)
     {
-        container.BindMessageBroker<FigurePlaced>(options);
-        container.BindMessageBroker<FigureOut>(options);
-        container.BindMessageBroker<FigureDisappear>(options);
-        container.BindMessageBroker<TowerHeightLimit>(options);
+        container.BindMessageBroker<FigureAction>(options);
+        container.BindMessageBroker<BaseFigureDragStart>(options);
+        container.BindMessageBroker<FigureDragging>(options);
+        container.BindMessageBroker<BaseFigureDragEnd>(options);
+        container.BindMessageBroker<DraggingObjectOutFromTower>(options);
+        container.BindMessageBroker<BaseFigureObjectOut>(options);
+        container.BindMessageBroker<FigureForBuildTowerDragEnd>(options);
     }
 }

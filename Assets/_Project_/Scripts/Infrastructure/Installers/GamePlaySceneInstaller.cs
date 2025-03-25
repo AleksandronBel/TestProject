@@ -1,27 +1,55 @@
-using MessagePipe;
+﻿using MessagePipe;
 using UnityEngine;
 using Zenject;
 
 public class GamePlaySceneInstaller : MonoInstaller
 {
-    [SerializeField] private FiguresSO _figuresSO;
-    [SerializeField] private SpritesSO _spritesSO;
+    [SerializeField] private FiguresConfig _figuresConfig;
+    //[SerializeField] private SpritesConfig _spritesConfig;
 
     MessagePipeOptions messagePipeOptions;
+    
+    //В ProjectContext сделать сервисы BindFigureService(); BindTowerService(); RegisterMessagePipe(); BindGameFactory(); BindSaveLoadService(после того как инициализируем все штуки (после фабрики));
+    //В MonoInstaller инициализировать только зависомости, связанные с монобехами 
+    // Для конфигов сделать ConfigInstaller
 
     public override void InstallBindings()
     {
         BindSaveLoadService();
-
-        BindSpritesConfig();
+        BindDraggingService();
         BindFigureProvider();
-        
-        BindFigureService();
-        BindTowerService();
+
+        //BindTowerService();
+
+        BindDraggingSystem();
+        BindTowerFigureHandlerSystem();
+        BindDropZoneSystem();
 
         RegisterMessagePipe();
         BindGameFactory();
     }
+
+    void BindDraggingSystem()
+    {
+        Container.Bind<DraggingFigureSystem>()
+                     .AsSingle()
+                     .NonLazy();
+    }
+
+    void BindTowerFigureHandlerSystem()
+    {
+        Container.Bind<TowerFigureHandlerSystem>()
+                     .AsSingle()
+                     .NonLazy();
+    }
+
+    void BindDropZoneSystem()
+    {
+        Container.Bind<DropZoneSystem>()
+                     .AsSingle()
+                     .NonLazy();
+    }
+
 
     private void BindSaveLoadService()
     { 
@@ -31,12 +59,12 @@ public class GamePlaySceneInstaller : MonoInstaller
             .NonLazy();
     }
 
-    private void BindSpritesConfig()
+    private void BindDraggingService()
     {
-        Container.Bind<ISpriteService>()
-            .To<SpriteService>()
+        Container.Bind<IDraggingService>()
+            .To<DraggingService>()
             .AsSingle()
-            .WithArguments(_spritesSO);
+            .NonLazy();
     }
 
     private void BindFigureProvider()
@@ -44,24 +72,16 @@ public class GamePlaySceneInstaller : MonoInstaller
         Container.Bind<IFigureProvider>()
             .To<ScriptableFigureProvider>()
             .AsSingle()
-            .WithArguments(_figuresSO);
+            .WithArguments(_figuresConfig);
     }
 
-    private void BindFigureService()
-    {
-        Container.Bind<IFigureService>()
-            .To<FigureService>()
-            .AsSingle()
-            .NonLazy();
-    }
-
-    private void BindTowerService()
+   /* private void BindTowerService()
     {
         Container.Bind<ITowerService>()
-            .To<TowerService>()
+            .To<FigurePlacementSystem>()
             .AsSingle()
             .NonLazy();
-    }
+    }*/
 
     private void BindGameFactory()
     {

@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1826951862264878470}
-  - component: {fileID: 3201131555799938922}
   - component: {fileID: 6615236952641141449}
-  - component: {fileID: 6321039941318152770}
+  - component: {fileID: 7389137869514581424}
+  - component: {fileID: 7401027765227159246}
   m_Layer: 0
   m_Name: Cube View
   m_TagString: Untagged
@@ -38,7 +38,15 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3201131555799938922
+--- !u!222 &6615236952641141449
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8099143067235541910}
+  m_CullTransparentMesh: 1
+--- !u!114 &7389137869514581424
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -50,18 +58,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9625629c85546c848a95959eb0d8614a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rectTrasnform: {fileID: 1826951862264878470}
-  _imageFigureColor: {fileID: 6321039941318152770}
-  _draggingObject: {fileID: -8534178608431762678, guid: b9ffa480f1436074fb41043781d952e8, type: 3}
---- !u!222 &6615236952641141449
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8099143067235541910}
-  m_CullTransparentMesh: 1
---- !u!114 &6321039941318152770
+  _rectTransform: {fileID: 1826951862264878470}
+  _imageFigureColor: {fileID: 7401027765227159246}
+  _draggingObjectPrefab: {fileID: -8534178608431762678, guid: b9ffa480f1436074fb41043781d952e8, type: 3}
+--- !u!114 &7401027765227159246
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
