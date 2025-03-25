@@ -1,16 +1,14 @@
 ﻿using DG.Tweening;
 using MessagePipe;
 using System.Collections.Generic;
-using UnityEngine.EventSystems;
 using UnityEngine;
-using Zenject;
 using R3;
 using System;
 
 public class TowerFigureHandlerSystem : IDisposable
 {
-    private readonly ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
-    private readonly ISubscriber<FigureActionMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
+    private readonly ISubscriber<FigureStatesMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
+    private readonly ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
 
     private readonly List<DraggingObject> _stackedObjects = new();
     public IReadOnlyList<DraggingObject> StackedObjects => _stackedObjects;
@@ -28,8 +26,8 @@ public class TowerFigureHandlerSystem : IDisposable
     public void Dispose() => _subscription?.Dispose();
 
     public TowerFigureHandlerSystem(IDraggingService draggingService,
-                                    ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> figureForBuildTowerDragEnd,
-                                    ISubscriber<FigureActionMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
+                                    ISubscriber<FigureStatesMessage.FigureForBuildTowerDragEnd> figureForBuildTowerDragEnd,
+                                    ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
                                     GameFactory gameFactory)
     {
         _draggingService = draggingService;
@@ -49,7 +47,7 @@ public class TowerFigureHandlerSystem : IDisposable
         _subscription = bag.Build();
     }
 
-    public void SetFigure(FigureActionMessage.FigureForBuildTowerDragEnd message)
+    public void SetFigure(FigureStatesMessage.FigureForBuildTowerDragEnd message)
     {
         var eventData = message.PointerEventData;
 
@@ -176,7 +174,7 @@ public class TowerFigureHandlerSystem : IDisposable
         //sequence.OnKill(() => SaveTower());
     }
 
-    public void DeleteFigure(FigureActionMessage.DraggingObjectOutFromTower message)
+    public void DeleteFigure(FigureStatesMessage.DraggingObjectOutFromTower message)
     {
         var draggingObject = message.Figure;
 

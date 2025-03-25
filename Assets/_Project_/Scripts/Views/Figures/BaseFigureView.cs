@@ -6,9 +6,9 @@ using Zenject;
 
 public abstract class BaseFigureView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [Inject] IPublisher<FigureActionMessage.BaseFigureDragStart> _baseFigureDragStart;
-    [Inject] IPublisher<FigureActionMessage.FigureDragging> _figureDragging;
-    [Inject] IPublisher<FigureActionMessage.BaseFigureDragEnd> _baseFigureDragEnd;
+    [Inject] IPublisher<FigureStatesMessage.BaseFigureDragStart> _baseFigureDragStart;
+    [Inject] IPublisher<FigureStatesMessage.FigureDragging> _figureDragging;
+    [Inject] IPublisher<FigureStatesMessage.BaseFigureDragEnd> _baseFigureDragEnd;
 
     [SerializeField] private RectTransform _rectTransform;
     [SerializeField] private Image _imageFigureColor;

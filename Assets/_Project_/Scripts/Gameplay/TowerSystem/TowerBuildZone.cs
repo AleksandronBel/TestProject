@@ -5,7 +5,7 @@ using Zenject;
 
 public class TowerBuildZone : MonoBehaviour, IDropHandler
 {
-    [Inject] IPublisher<FigureActionMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
+    [Inject] IPublisher<FigureStatesMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
 
     [SerializeField] private RectTransform _canvasRectTransform;
 

@@ -5,8 +5,8 @@ using Zenject;
 
 public class DropZone : MonoBehaviour, IDropHandler
 {
-    [Inject] IPublisher<FigureActionMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
-    [Inject] IPublisher<FigureActionMessage.BaseFigureObjectOut> _figureObjectOut;
+    [Inject] IPublisher<FigureStatesMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
+    [Inject] IPublisher<FigureStatesMessage.BaseFigureObjectOut> _figureObjectOut;
 
     public void OnDrop(PointerEventData eventData)
     {

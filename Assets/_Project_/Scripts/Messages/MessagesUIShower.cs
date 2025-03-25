@@ -18,7 +18,7 @@ public class MessagesUIShower : MonoBehaviour, IDisposable
 
     private IDisposable _subscription;
 
-    [Inject] ISubscriber<FigureActionMessage.FigureAction> _figureDragStart;
+    [Inject] ISubscriber<FigureActionMessage.FigureAction> _figureActionMessage;
    
     public void Dispose() => _subscription?.Dispose();
 
@@ -27,10 +27,7 @@ public class MessagesUIShower : MonoBehaviour, IDisposable
     {
         var bag = MessagePipe.DisposableBag.CreateBuilder();
 
-        _figureDragStart.Subscribe(HandleMessage).AddTo(bag);
-       /* _figureOut.Subscribe(HandleMessage).AddTo(bag);
-        _figureDissapear.Subscribe(HandleMessage).AddTo(bag);
-        _figureHeightLimit.Subscribe(HandleMessage).AddTo(bag);*/
+        _figureActionMessage.Subscribe(HandleMessage).AddTo(bag);
 
         _subscription = bag.Build();
     }

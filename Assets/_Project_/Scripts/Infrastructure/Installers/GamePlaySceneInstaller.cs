@@ -5,7 +5,6 @@ using Zenject;
 public class GamePlaySceneInstaller : MonoInstaller
 {
     [SerializeField] private FiguresConfig _figuresConfig;
-    //[SerializeField] private SpritesConfig _spritesConfig;
 
     MessagePipeOptions messagePipeOptions;
     

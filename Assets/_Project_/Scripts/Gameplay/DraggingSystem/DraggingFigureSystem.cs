@@ -5,18 +5,18 @@ using System;
 
 public class DraggingFigureSystem : IDisposable
 {
-    private readonly ISubscriber<FigureActionMessage.BaseFigureDragStart> _baseFigureDragStart;
-    private readonly ISubscriber<FigureActionMessage.FigureDragging> _figureDragging;
-    private readonly ISubscriber<FigureActionMessage.BaseFigureDragEnd> _baseFigureDragEnd;
+    private readonly ISubscriber<FigureStatesMessage.BaseFigureDragStart> _baseFigureDragStart;
+    private readonly ISubscriber<FigureStatesMessage.FigureDragging> _figureDragging;
+    private readonly ISubscriber<FigureStatesMessage.BaseFigureDragEnd> _baseFigureDragEnd;
 
     private readonly GameFactory _gameFactory;
     private IDraggingService _draggingService;
     private IDisposable _subscription;
     public void Dispose() => _subscription?.Dispose();
 
-    public DraggingFigureSystem(ISubscriber<FigureActionMessage.BaseFigureDragStart> baseFigureDragStart,
-                                ISubscriber<FigureActionMessage.FigureDragging> figureDragging,
-                                ISubscriber<FigureActionMessage.BaseFigureDragEnd> basefigureDragEnd,
+    public DraggingFigureSystem(ISubscriber<FigureStatesMessage.BaseFigureDragStart> baseFigureDragStart,
+                                ISubscriber<FigureStatesMessage.FigureDragging> figureDragging,
+                                ISubscriber<FigureStatesMessage.BaseFigureDragEnd> basefigureDragEnd,
                                 GameFactory gameFactory,
                                 IDraggingService draggingService)
     {
@@ -41,7 +41,7 @@ public class DraggingFigureSystem : IDisposable
         _subscription = bag.Build();
     }
 
-    private void StartDrag(FigureActionMessage.BaseFigureDragStart message)
+    private void StartDrag(FigureStatesMessage.BaseFigureDragStart message)
     {
         var baseFigure = message.Figure;
         var draggingObjectPrefab = baseFigure.DraggingObjectPrefab;
@@ -59,7 +59,7 @@ public class DraggingFigureSystem : IDisposable
         _draggingService.CurrentDraggingCopy.Value = draggingObject;    
     }
 
-    private void Dragging(FigureActionMessage.FigureDragging message)
+    private void Dragging(FigureStatesMessage.FigureDragging message)
     {
         var eventData = message.PointerEventData;
         var draggingObject = _draggingService.CurrentDraggingCopy.Value;
@@ -78,10 +78,4 @@ public class DraggingFigureSystem : IDisposable
         if (!draggingObject.IsFigureInTower)
             draggingObject.DestroyWithAnimation();
     }
-
-    /*public void DeleteFigure(PointerEventData eventData)
-    {
-        _currentDraggingCopy.Value.DestroyWithAnimation();
-        //_figureOut.Publish(new(MessageType.figure_out));
-    }*/
 }

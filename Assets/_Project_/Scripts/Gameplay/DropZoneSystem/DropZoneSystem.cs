@@ -3,13 +3,13 @@ using System;
 
 public class DropZoneSystem
 {
-    private readonly ISubscriber<FigureActionMessage.BaseFigureObjectOut> _figureObjectOut;
+    private readonly ISubscriber<FigureStatesMessage.BaseFigureObjectOut> _figureObjectOut;
 
     private IDraggingService _draggingService;
     private IDisposable _subscription;
     public void Dispose() => _subscription?.Dispose();
 
-    public DropZoneSystem(ISubscriber<FigureActionMessage.BaseFigureObjectOut> figureObjectOut,
+    public DropZoneSystem(ISubscriber<FigureStatesMessage.BaseFigureObjectOut> figureObjectOut,
                           IDraggingService draggingService)
     {
         _figureObjectOut = figureObjectOut;
