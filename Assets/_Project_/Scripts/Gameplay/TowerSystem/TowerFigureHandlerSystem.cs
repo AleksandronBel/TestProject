@@ -9,11 +9,13 @@ using System;
 
 public class TowerFigureHandlerSystem : IDisposable
 {
-    private readonly ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> _baseFigureDragEnd;
+    private readonly ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
     private readonly ISubscriber<FigureActionMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
 
     private readonly List<DraggingObject> _stackedObjects = new();
     public IReadOnlyList<DraggingObject> StackedObjects => _stackedObjects;
+
+    private Transform _parent;
 
     public ReactiveProperty<float> MaxHeight => _maxHeight;
     public ReactiveProperty<float> CurrentTowerHeight => _currentTowerHeight;
@@ -26,12 +28,12 @@ public class TowerFigureHandlerSystem : IDisposable
     public void Dispose() => _subscription?.Dispose();
 
     public TowerFigureHandlerSystem(IDraggingService draggingService,
-                                    ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> baseFigureDragEnd,
+                                    ISubscriber<FigureActionMessage.FigureForBuildTowerDragEnd> figureForBuildTowerDragEnd,
                                     ISubscriber<FigureActionMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
                                     GameFactory gameFactory)
     {
         _draggingService = draggingService;
-        _baseFigureDragEnd = baseFigureDragEnd;
+        _figureForBuildTowerDragEnd = figureForBuildTowerDragEnd;
         _draggingObjectOutFromTower = draggingObjectOutFromTower;
 
         InitializeMessages();
@@ -41,24 +43,11 @@ public class TowerFigureHandlerSystem : IDisposable
     {
         var bag = MessagePipe.DisposableBag.CreateBuilder();
 
-        _baseFigureDragEnd.Subscribe(SetFigure).AddTo(bag);
+        _figureForBuildTowerDragEnd.Subscribe(SetFigure).AddTo(bag);
         _draggingObjectOutFromTower.Subscribe(DeleteFigure).AddTo(bag);
 
         _subscription = bag.Build();
     }
-
-    private Transform _parent;
-
-    // private ISaveLoadProgressService _saveLoadProgressService;
-    //private GameFactory _gameFactory;
-
-
-    /*[Inject]
-    private void Construct(ISaveLoadProgressService saveLoadProgressService, GameFactory gameFactory)
-    {
-        _saveLoadProgressService = saveLoadProgressService;//
-        _gameFactory = gameFactory;
-    }*/
 
     public void SetFigure(FigureActionMessage.FigureForBuildTowerDragEnd message)
     {
@@ -74,7 +63,15 @@ public class TowerFigureHandlerSystem : IDisposable
             _parent = transform;
 
             if (StackedObjects.Count == 0)
-                _maxHeight.Value = rectTransform.rect.height - (item.RectTransform.position.y + item.RectTransform.rect.height); //проверять высоту экрана
+            {
+                float screenHeight = rectTransform.rect.height;
+                float itemHeight = item.RectTransform.rect.height;
+                float itemY = item.RectTransform.anchoredPosition.y; 
+                float itemPivot = item.RectTransform.pivot.y;
+                float itemBottomY = (screenHeight * (1 - rectTransform.pivot.y)) + itemY - (itemHeight * itemPivot);
+
+                _maxHeight.Value = screenHeight - itemBottomY;
+            }
 
             if (CanPlaceOnTower(item.RectTransform.position, item) && CheckTowerHeight(item))
             {

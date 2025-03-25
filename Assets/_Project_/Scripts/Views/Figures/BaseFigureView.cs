@@ -16,7 +16,7 @@ public abstract class BaseFigureView : MonoBehaviour, IBeginDragHandler, IDragHa
 
     public DraggingObject DraggingObjectPrefab => _draggingObjectPrefab;
 
-    public Canvas MainCanvas {get; set;}
+    public Canvas MainCanvas { get; set; }
     public Image ImageFigureColor => _imageFigureColor;
 
     public void OnBeginDrag(PointerEventData eventData)
