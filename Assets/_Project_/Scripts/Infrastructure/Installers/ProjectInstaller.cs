@@ -1,31 +1,23 @@
 ﻿using MessagePipe;
-using UnityEngine;
 using Zenject;
 
-public class GamePlaySceneInstaller : MonoInstaller
+public class ProjectInstaller : MonoInstaller
 {
-    [SerializeField] private FiguresConfig _figuresConfig;
-
     MessagePipeOptions messagePipeOptions;
-    
-    //В ProjectContext сделать сервисы BindFigureService(); BindTowerService(); RegisterMessagePipe(); BindGameFactory(); BindSaveLoadService(после того как инициализируем все штуки (после фабрики));
-    //В MonoInstaller инициализировать только зависомости, связанные с монобехами 
-    // Для конфигов сделать ConfigInstaller
 
     public override void InstallBindings()
     {
-        BindSaveLoadService();
-        BindDraggingService();
-        BindFigureProvider();
-
-        //BindTowerService();
-
         BindDraggingSystem();
         BindTowerFigureHandlerSystem();
         BindDropZoneSystem();
 
-        RegisterMessagePipe();
+        BindDraggingService();
+
         BindGameFactory();
+
+        RegisterMessagePipe();
+
+        BindSaveLoadService();
     }
 
     void BindDraggingSystem()
@@ -49,15 +41,6 @@ public class GamePlaySceneInstaller : MonoInstaller
                      .NonLazy();
     }
 
-
-    private void BindSaveLoadService()
-    { 
-        Container.Bind<ISaveLoadProgressService>()
-            .To<SaveLoadProgressService>()
-            .AsSingle()
-            .NonLazy();
-    }
-
     private void BindDraggingService()
     {
         Container.Bind<IDraggingService>()
@@ -65,22 +48,6 @@ public class GamePlaySceneInstaller : MonoInstaller
             .AsSingle()
             .NonLazy();
     }
-
-    private void BindFigureProvider()
-    {
-        Container.Bind<IFigureProvider>()
-            .To<ScriptableFigureProvider>()
-            .AsSingle()
-            .WithArguments(_figuresConfig);
-    }
-
-   /* private void BindTowerService()
-    {
-        Container.Bind<ITowerService>()
-            .To<FigurePlacementSystem>()
-            .AsSingle()
-            .NonLazy();
-    }*/
 
     private void BindGameFactory()
     {
@@ -112,5 +79,13 @@ public class GamePlaySceneInstaller : MonoInstaller
 
             methodInfo.Invoke(null, new object[] { Container, messagePipeOptions });
         });
+    }
+
+    private void BindSaveLoadService()
+    {
+        Container.Bind<ISaveLoadProgressService>()
+            .To<SaveLoadProgressService>()
+            .AsSingle()
+            .NonLazy();
     }
 }
