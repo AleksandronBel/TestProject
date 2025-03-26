@@ -1,17 +1,21 @@
 ﻿using DG.Tweening;
 using MessagePipe;
-using System.Collections.Generic;
 using UnityEngine;
 using R3;
 using System;
+using ObservableCollections;
+using Cysharp.Threading.Tasks;
 
 public class TowerFigureHandlerSystem : IDisposable
 {
     private readonly ISubscriber<FigureStatesMessage.FigureForBuildTowerDragEnd> _figureForBuildTowerDragEnd;
     private readonly ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> _draggingObjectOutFromTower;
+    private readonly ISubscriber<TowerMessages.TowerResetData> _towerResetData;
 
-    private readonly List<DraggingObject> _stackedObjects = new();
-    public IReadOnlyList<DraggingObject> StackedObjects => _stackedObjects;
+    private readonly IPublisher<FigureActionMessage.FigureAction> _figureActionMessage;
+
+    private readonly ObservableList<DraggingObject> _stackedObjects = new();
+    public IReadOnlyObservableList<DraggingObject> StackedObjects => _stackedObjects;
 
     private Transform _parent;
 
@@ -20,21 +24,40 @@ public class TowerFigureHandlerSystem : IDisposable
 
     private ReactiveProperty<float> _maxHeight = new();
     private ReactiveProperty<float> _currentTowerHeight = new();
+    private IDisposable _subscription;
 
     private IDraggingService _draggingService;
-    private IDisposable _subscription;
+    private IFigureProvider _figureProvider;
+
+    private GameFactory _gameFactory;
+    //private SaveSystem _saveSystem;
+
     public void Dispose() => _subscription?.Dispose();
 
     public TowerFigureHandlerSystem(IDraggingService draggingService,
+                                    IFigureProvider figureProvider,
                                     ISubscriber<FigureStatesMessage.FigureForBuildTowerDragEnd> figureForBuildTowerDragEnd,
                                     ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
-                                    GameFactory gameFactory)
+                                    ISubscriber<TowerMessages.TowerResetData> towerResetData,
+                                    IPublisher<FigureActionMessage.FigureAction> figureActionMessage,
+                                    GameFactory gameFactory,
+                                    /*SaveSystem saveSystem*/)
     {
         _draggingService = draggingService;
+        _figureProvider = figureProvider;
+
         _figureForBuildTowerDragEnd = figureForBuildTowerDragEnd;
         _draggingObjectOutFromTower = draggingObjectOutFromTower;
+        _towerResetData = towerResetData;
+
+        _figureActionMessage = figureActionMessage;
+
+        _gameFactory = gameFactory;
+        //_saveSystem = saveSystem;
 
         InitializeMessages();
+
+        LoadTower();
     }
 
     private void InitializeMessages()
@@ -43,6 +66,7 @@ public class TowerFigureHandlerSystem : IDisposable
 
         _figureForBuildTowerDragEnd.Subscribe(SetFigure).AddTo(bag);
         _draggingObjectOutFromTower.Subscribe(DeleteFigure).AddTo(bag);
+        _towerResetData.Subscribe(_ => ClearTower()).AddTo(bag);
 
         _subscription = bag.Build();
     }
@@ -64,7 +88,7 @@ public class TowerFigureHandlerSystem : IDisposable
             {
                 float screenHeight = rectTransform.rect.height;
                 float itemHeight = item.RectTransform.rect.height;
-                float itemY = item.RectTransform.anchoredPosition.y; 
+                float itemY = item.RectTransform.anchoredPosition.y;
                 float itemPivot = item.RectTransform.pivot.y;
                 float itemBottomY = (screenHeight * (1 - rectTransform.pivot.y)) + itemY - (itemHeight * itemPivot);
 
@@ -72,14 +96,9 @@ public class TowerFigureHandlerSystem : IDisposable
             }
 
             if (CanPlaceOnTower(item.RectTransform.position, item) && CheckTowerHeight(item))
-            {
                 PlaceOnTower(item);
-            }
             else
-            {
-                //_figureDisappear.Publish(new(MessageType.figure_disappear));
                 item.DestroyWithAnimation();
-            }
         }
     }
 
@@ -103,13 +122,18 @@ public class TowerFigureHandlerSystem : IDisposable
     {
         if (_currentTowerHeight.Value + item.RectTransform.rect.height >= _maxHeight.Value)
         {
-            //_figureHeightLimit.Publish(new(MessageType.tower_height_limit));
-
-            item.DestroyWithAnimation();
+            InvokeHeightTowerMessage();
             return false;
         }
 
         return true;
+    }
+
+    private async void InvokeHeightTowerMessage()
+    {
+        await UniTask.Delay(TimeSpan.FromSeconds(0.3f));
+
+        _figureActionMessage.Publish(new(MessageFigureType.tower_height_limit));
     }
 
     private void PlaceOnTower(DraggingObject item)
@@ -125,8 +149,9 @@ public class TowerFigureHandlerSystem : IDisposable
         {
             newPosition = item.RectTransform.position;
             item.transform.SetParent(_parent, worldPositionStays: true);
+            _stackedObjects.Add(item);
 
-            //SaveTower();
+            SaveTower();
         }
         else
         {
@@ -136,16 +161,17 @@ public class TowerFigureHandlerSystem : IDisposable
             newPosition = new Vector3(lastBlockLocalPosition.x + xOffset, lastBlockLocalPosition.y + blockHeight, 0);
             Vector3 worldPosition = _parent.TransformPoint(newPosition);
 
+            _stackedObjects.Add(item);
+
             item.RectTransform.DOMove(worldPosition, 0.3f).SetEase(Ease.OutBounce).OnKill(() =>
             {
-                //SaveTower();
+                SaveTower();
             });
 
             item.transform.SetParent(_parent, worldPositionStays: true);
         }
 
-        _stackedObjects.Add(item);
-        ///_figurePlaced.Publish(new(MessageType.figure_placed));
+        _figureActionMessage.Publish(new(MessageFigureType.figure_placed));
     }
 
     public void RemoveFigure(DraggingObject draggingObject)
@@ -171,13 +197,13 @@ public class TowerFigureHandlerSystem : IDisposable
             ).SetEase(Ease.OutBounce));
         }
 
-        //sequence.OnKill(() => SaveTower());
+        sequence.OnKill(() => SaveTower());
     }
 
     public void DeleteFigure(FigureStatesMessage.DraggingObjectOutFromTower message)
     {
         var draggingObject = message.Figure;
-
+            
         RemoveFigure(draggingObject);
 
         draggingObject.IsDraggingObjectRemoved = true;
@@ -186,42 +212,54 @@ public class TowerFigureHandlerSystem : IDisposable
 
         draggingObject.DestroyWithAnimation();
 
-        //_figureOut.Publish(new(MessageType.figure_out));
+        _figureActionMessage.Publish(new(MessageFigureType.figure_out));
     }
 
-    /*private void SaveTower()
+    /*public void LoadFigure(FigureSaveData figureData)
     {
-        _saveLoadProgressService.SaveTower(_stackedObjects);
-    }
+        var figure = _figureProvider.GetFigureById(figureData.SpriteId);
 
-    public void LoadTowerData(DraggingObject draggingObject, Transform transform, Canvas canvas)
-    {
-        TowerSaveData data = _saveLoadProgressService.LoadTower();
-
-        _maxHeight.Value = data.MaxHeight;
-        _currentTowerHeight.Value = data.CurrentTowerHeight;
-
-        foreach (var figureData in data.Figures)
+        if (figure == null)
         {
-            DraggingObject newFigure = _gameFactory.Instantiate(draggingObject, transform);
-            *//*newFigure.Image.sprite = draggingObject
-                _spriteService.GetSprite(figureData.SpriteName);*//*
-
-            newFigure.MainCanvas = canvas;
-
-            newFigure.RectTransform.position = new Vector3(figureData.X, figureData.Y, 0);
-            _stackedObjects.Add(newFigure);
+            Debug.LogError($"Не удалось загрузить фигуру с ID {figureData.SpriteId}");
+            return;
         }
+
+        var draggingObject = _gameFactory.Instantiate(figure.DraggingObjectPrefab, _parent);
+
+        if (draggingObject == null)
+        {
+            Debug.LogError("Ошибка при создании DraggingObject");
+            return;
+        }
+
+        draggingObject.transform.SetParent(_parent, worldPositionStays: true);
+        draggingObject.RectTransform.anchoredPosition = new Vector2(figureData.X, figureData.Y);
+        draggingObject.IsFigureInTower = true;
+
+        _stackedObjects.Add(draggingObject);
     }
 
-    public void DeleteAllTowerData()
+    private void SaveTower()
     {
+        _saveSystem.Save();
+    }
+
+    private void LoadTower()
+    {
+        _saveSystem.Load();
+    }
+
+    public void ClearTower()
+    {
+        _saveSystem.Reset();
+
         foreach (var figure in _stackedObjects)
             figure.DestroyWithAnimation();
 
         _stackedObjects.Clear();
 
-        _currentTowerHeight.Value = 0;
+        CurrentTowerHeight.Value = 0;
         _maxHeight.Value = 0;
 
         SaveTower();

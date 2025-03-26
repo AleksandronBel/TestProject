@@ -2,5 +2,6 @@
 
 public interface IFigureProvider
 {
-    List<Figure> GetFigures();
+    public List<Figure> GetFigures();
+    BaseFigureView GetFigureById(string spriteId);
 }

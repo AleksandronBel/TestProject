@@ -9,6 +9,8 @@ public class DraggingFigureSystem : IDisposable
     private readonly ISubscriber<FigureStatesMessage.FigureDragging> _figureDragging;
     private readonly ISubscriber<FigureStatesMessage.BaseFigureDragEnd> _baseFigureDragEnd;
 
+    private readonly IPublisher<FigureActionMessage.FigureAction> _figureActionMessage;
+
     private readonly GameFactory _gameFactory;
     private IDraggingService _draggingService;
     private IDisposable _subscription;
@@ -17,12 +19,15 @@ public class DraggingFigureSystem : IDisposable
     public DraggingFigureSystem(ISubscriber<FigureStatesMessage.BaseFigureDragStart> baseFigureDragStart,
                                 ISubscriber<FigureStatesMessage.FigureDragging> figureDragging,
                                 ISubscriber<FigureStatesMessage.BaseFigureDragEnd> basefigureDragEnd,
+                                IPublisher<FigureActionMessage.FigureAction> figureActionMessage,
                                 GameFactory gameFactory,
                                 IDraggingService draggingService)
     {
         _baseFigureDragStart = baseFigureDragStart;
         _figureDragging = figureDragging;
         _baseFigureDragEnd = basefigureDragEnd;
+
+        _figureActionMessage = figureActionMessage;
 
         _gameFactory = gameFactory;
         _draggingService = draggingService;
@@ -76,6 +81,9 @@ public class DraggingFigureSystem : IDisposable
         await UniTask.Yield();
 
         if (!draggingObject.IsFigureInTower)
+        {
+            _figureActionMessage.Publish(new(MessageFigureType.figure_disappear));
             draggingObject.DestroyWithAnimation();
+        }
     }
 }

@@ -10,16 +10,20 @@ using DG.Tweening;
 
 public class MessagesUIShower : MonoBehaviour, IDisposable
 {
-    [SerializeField] private LocalizeStringEvent _actionTextEvent;
-    [SerializeField] private TMP_Text _actionText;
-    
-    [SerializeField] private float fadeTextDuration = 0.3f;
-    [SerializeField] private float visibleTextDuration = 1f;
+    [Inject] ISubscriber<FigureActionMessage.FigureAction> _figureActionMessage;
+
+    [SerializeField] private ActionMessage _actionMessagePrefab;
+    [SerializeField] private RectTransform _messagesContainer;
+
+    [SerializeField] private float _fadeStartTextDuration = 0.3f;
+    [SerializeField] private float _fadeEndTextDuration = 1f;
+    [SerializeField] private float _visibleTextDuration = 0.3f;
+
+    [SerializeField] private float _offset = 500f;
+    [SerializeField] private float _upOffsetDuration = 2f;
 
     private IDisposable _subscription;
 
-    [Inject] ISubscriber<FigureActionMessage.FigureAction> _figureActionMessage;
-   
     public void Dispose() => _subscription?.Dispose();
 
     [Inject]
@@ -32,23 +36,42 @@ public class MessagesUIShower : MonoBehaviour, IDisposable
         _subscription = bag.Build();
     }
 
-    private void HandleMessage<T>(T message) where T : IMessage
+    private void HandleMessage<T>(T message) where T : IFigureMessage
     {
-        _actionTextEvent.StringReference.TableEntryReference = message.MessageType.ToString();
+        var messageObjectPrefab = Instantiate(_actionMessagePrefab, _messagesContainer);
 
-        ShowTextWithAnimation();
+        messageObjectPrefab.ActionTextEvent.StringReference.TableEntryReference = message.MessageType.ToString();
+
+        ShowTextWithAnimation(messageObjectPrefab);
     }
 
-    private void ShowTextWithAnimation()
+    private void ShowTextWithAnimation(ActionMessage messageObjectPrefab)
     {
-        _actionText.gameObject.SetActive(true);
-        _actionText.color = new Color(_actionText.color.r, _actionText.color.g, _actionText.color.b, 0);
+        messageObjectPrefab.gameObject.SetActive(true);
+        messageObjectPrefab.ActionText.color = new Color(
+            messageObjectPrefab.ActionText.color.r,
+            messageObjectPrefab.ActionText.color.g,
+            messageObjectPrefab.ActionText.color.b,
+            0
+        );
 
-        Sequence sequence = DOTween.Sequence();
 
-        sequence.Append(_actionText.DOFade(1, fadeTextDuration))
-        .AppendInterval(visibleTextDuration)
-                .Append(_actionText.DOFade(0, fadeTextDuration))
-                .OnComplete(() => _actionText.gameObject.SetActive(false));
+        // 1. Анимация движения ВВЕРХ через AnchorPos
+        var moveTween = messageObjectPrefab.GetComponent<RectTransform>()
+            .DOAnchorPosY(messageObjectPrefab.transform.localPosition.y + _offset, _upOffsetDuration) // Используем положительный offset
+            .SetEase(Ease.Linear)
+            .SetLoops(-1, LoopType.Restart) // Меняем тип повтора
+            .OnKill(() => {
+                if (messageObjectPrefab != null)
+                    Destroy(messageObjectPrefab.gameObject);
+            });
+
+        // 2. Последовательность для фейдов (без изменений)
+        Sequence fadeSequence = DOTween.Sequence();
+        fadeSequence
+            .Append(messageObjectPrefab.ActionText.DOFade(1, _fadeStartTextDuration))
+            .AppendInterval(_visibleTextDuration)
+            .Append(messageObjectPrefab.ActionText.DOFade(0, _fadeEndTextDuration))
+            .OnComplete(() => moveTween?.Kill());
     }
 }

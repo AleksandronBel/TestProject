@@ -1,4 +1,4 @@
-﻿public interface IMessage
+﻿public interface IFigureMessage
 {
-    MessageType MessageType { get; }
+    MessageFigureType MessageType { get; }
 }

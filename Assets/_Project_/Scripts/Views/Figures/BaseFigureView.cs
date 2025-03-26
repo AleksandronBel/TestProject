@@ -13,11 +13,12 @@ public abstract class BaseFigureView : MonoBehaviour, IBeginDragHandler, IDragHa
     [SerializeField] private RectTransform _rectTransform;
     [SerializeField] private Image _imageFigureColor;
     [SerializeField] private DraggingObject _draggingObjectPrefab;
+    [SerializeField] private string _spriteId;
 
     public DraggingObject DraggingObjectPrefab => _draggingObjectPrefab;
-
     public Canvas MainCanvas { get; set; }
     public Image ImageFigureColor => _imageFigureColor;
+    public string SpriteId => _spriteId;
 
     public void OnBeginDrag(PointerEventData eventData)
     {

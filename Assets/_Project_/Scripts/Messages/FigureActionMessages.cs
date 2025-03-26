@@ -1,7 +1,7 @@
 ﻿using MessagePipe;
 using Zenject;
 
-public enum MessageType
+public enum MessageFigureType
 {
     figure_placed,
     figure_out,
@@ -11,10 +11,10 @@ public enum MessageType
 
 public static class FigureActionMessage
 {
-    public record FigureAction : IMessage
+    public record FigureAction : IFigureMessage
     {
-        public MessageType MessageType { get; }
-        public FigureAction(MessageType messageType) => MessageType = messageType;
+        public MessageFigureType MessageType { get; }
+        public FigureAction(MessageFigureType messageType) => MessageType = messageType;
     }
 
     public static void Install(DiContainer container, MessagePipeOptions options)
