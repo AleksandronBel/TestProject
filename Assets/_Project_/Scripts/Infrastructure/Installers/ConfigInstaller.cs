@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Zenject;
 
-public class ProjectConfigInstaller : MonoInstaller
+public class ConfigInstaller : MonoInstaller
 {
     [SerializeField] private FiguresConfig _figuresConfig;
 

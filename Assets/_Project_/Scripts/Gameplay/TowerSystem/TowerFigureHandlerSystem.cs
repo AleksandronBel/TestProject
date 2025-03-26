@@ -40,7 +40,7 @@ public class TowerFigureHandlerSystem : IDisposable
                                     ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
                                     ISubscriber<TowerMessages.TowerResetData> towerResetData,
                                     IPublisher<FigureActionMessage.FigureAction> figureActionMessage,
-                                    GameFactory gameFactory,
+                                    GameFactory gameFactory
                                     /*SaveSystem saveSystem*/)
     {
         _draggingService = draggingService;
@@ -57,7 +57,7 @@ public class TowerFigureHandlerSystem : IDisposable
 
         InitializeMessages();
 
-        LoadTower();
+        //LoadTower();
     }
 
     private void InitializeMessages()
@@ -66,7 +66,7 @@ public class TowerFigureHandlerSystem : IDisposable
 
         _figureForBuildTowerDragEnd.Subscribe(SetFigure).AddTo(bag);
         _draggingObjectOutFromTower.Subscribe(DeleteFigure).AddTo(bag);
-        _towerResetData.Subscribe(_ => ClearTower()).AddTo(bag);
+        //_towerResetData.Subscribe(_ => ClearTower()).AddTo(bag);
 
         _subscription = bag.Build();
     }
@@ -151,7 +151,7 @@ public class TowerFigureHandlerSystem : IDisposable
             item.transform.SetParent(_parent, worldPositionStays: true);
             _stackedObjects.Add(item);
 
-            SaveTower();
+            //SaveTower();
         }
         else
         {
@@ -165,7 +165,7 @@ public class TowerFigureHandlerSystem : IDisposable
 
             item.RectTransform.DOMove(worldPosition, 0.3f).SetEase(Ease.OutBounce).OnKill(() =>
             {
-                SaveTower();
+                //SaveTower();
             });
 
             item.transform.SetParent(_parent, worldPositionStays: true);
@@ -197,7 +197,7 @@ public class TowerFigureHandlerSystem : IDisposable
             ).SetEase(Ease.OutBounce));
         }
 
-        sequence.OnKill(() => SaveTower());
+        //sequence.OnKill(() => SaveTower());
     }
 
     public void DeleteFigure(FigureStatesMessage.DraggingObjectOutFromTower message)

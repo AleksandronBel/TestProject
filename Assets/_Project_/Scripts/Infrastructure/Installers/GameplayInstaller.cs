@@ -1,7 +1,7 @@
 ﻿using MessagePipe;
 using Zenject;
 
-public class ProjectInstaller : MonoInstaller
+public class GameplayInstaller : MonoInstaller
 {
     MessagePipeOptions messagePipeOptions;
 
@@ -83,9 +83,9 @@ public class ProjectInstaller : MonoInstaller
 
     private void BindSaveLoadService()
     {
-        Container.Bind<ISaveLoadProgressService>()
+        /*Container.Bind<ISaveLoadProgressService>()
             .To<SaveLoadProgressService>()
             .AsSingle()
-            .NonLazy();
+            .NonLazy();*/
     }
 }
