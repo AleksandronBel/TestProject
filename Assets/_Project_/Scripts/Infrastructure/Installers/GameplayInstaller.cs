@@ -83,9 +83,8 @@ public class GameplayInstaller : MonoInstaller
 
     private void BindSaveLoadService()
     {
-        /*Container.Bind<ISaveLoadProgressService>()
-            .To<SaveLoadProgressService>()
-            .AsSingle()
-            .NonLazy();*/
+        Container.Bind<TowerSaveSystem>()
+                     .AsSingle()
+                     .NonLazy(); 
     }
 }

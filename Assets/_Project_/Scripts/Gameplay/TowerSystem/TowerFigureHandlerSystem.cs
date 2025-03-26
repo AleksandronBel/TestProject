@@ -3,8 +3,9 @@ using MessagePipe;
 using UnityEngine;
 using R3;
 using System;
-using ObservableCollections;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
 public class TowerFigureHandlerSystem : IDisposable
 {
@@ -14,11 +15,10 @@ public class TowerFigureHandlerSystem : IDisposable
 
     private readonly IPublisher<FigureActionMessage.FigureAction> _figureActionMessage;
 
-    private readonly ObservableList<DraggingObject> _stackedObjects = new();
-    public IReadOnlyObservableList<DraggingObject> StackedObjects => _stackedObjects;
+    private readonly List<DraggingObject> _stackedObjects = new();
+    public IReadOnlyList<DraggingObject> StackedObjects => _stackedObjects;
 
     private Transform _parent;
-
     public ReactiveProperty<float> MaxHeight => _maxHeight;
     public ReactiveProperty<float> CurrentTowerHeight => _currentTowerHeight;
 
@@ -30,7 +30,7 @@ public class TowerFigureHandlerSystem : IDisposable
     private IFigureProvider _figureProvider;
 
     private GameFactory _gameFactory;
-    //private SaveSystem _saveSystem;
+    private TowerSaveSystem _saveSystem;
 
     public void Dispose() => _subscription?.Dispose();
 
@@ -40,8 +40,8 @@ public class TowerFigureHandlerSystem : IDisposable
                                     ISubscriber<FigureStatesMessage.DraggingObjectOutFromTower> draggingObjectOutFromTower,
                                     ISubscriber<TowerMessages.TowerResetData> towerResetData,
                                     IPublisher<FigureActionMessage.FigureAction> figureActionMessage,
-                                    GameFactory gameFactory
-                                    /*SaveSystem saveSystem*/)
+                                    GameFactory gameFactory,
+                                    TowerSaveSystem saveSystem)
     {
         _draggingService = draggingService;
         _figureProvider = figureProvider;
@@ -53,11 +53,9 @@ public class TowerFigureHandlerSystem : IDisposable
         _figureActionMessage = figureActionMessage;
 
         _gameFactory = gameFactory;
-        //_saveSystem = saveSystem;
+        _saveSystem = saveSystem;
 
         InitializeMessages();
-
-        //LoadTower();
     }
 
     private void InitializeMessages()
@@ -66,7 +64,7 @@ public class TowerFigureHandlerSystem : IDisposable
 
         _figureForBuildTowerDragEnd.Subscribe(SetFigure).AddTo(bag);
         _draggingObjectOutFromTower.Subscribe(DeleteFigure).AddTo(bag);
-        //_towerResetData.Subscribe(_ => ClearTower()).AddTo(bag);
+        _towerResetData.Subscribe(_ => ClearTower()).AddTo(bag);
 
         _subscription = bag.Build();
     }
@@ -149,12 +147,14 @@ public class TowerFigureHandlerSystem : IDisposable
         {
             newPosition = item.RectTransform.position;
             item.transform.SetParent(_parent, worldPositionStays: true);
+
             _stackedObjects.Add(item);
 
-            //SaveTower();
+            SaveTower();
         }
         else
         {
+            item.transform.SetParent(_parent, worldPositionStays: true);
             var lastBlock = StackedObjects[StackedObjects.Count - 1];
             Vector3 lastBlockLocalPosition = _parent.InverseTransformPoint(lastBlock.RectTransform.position);
             float xOffset = UnityEngine.Random.Range(-blockHeight * 0.5f, blockHeight * 0.5f);
@@ -165,10 +165,8 @@ public class TowerFigureHandlerSystem : IDisposable
 
             item.RectTransform.DOMove(worldPosition, 0.3f).SetEase(Ease.OutBounce).OnKill(() =>
             {
-                //SaveTower();
+                SaveTower();
             });
-
-            item.transform.SetParent(_parent, worldPositionStays: true);
         }
 
         _figureActionMessage.Publish(new(MessageFigureType.figure_placed));
@@ -197,13 +195,13 @@ public class TowerFigureHandlerSystem : IDisposable
             ).SetEase(Ease.OutBounce));
         }
 
-        //sequence.OnKill(() => SaveTower());
+        sequence.OnKill(() => SaveTower());
     }
 
-    public void DeleteFigure(FigureStatesMessage.DraggingObjectOutFromTower message)
+    private void DeleteFigure(FigureStatesMessage.DraggingObjectOutFromTower message)
     {
         var draggingObject = message.Figure;
-            
+
         RemoveFigure(draggingObject);
 
         draggingObject.IsDraggingObjectRemoved = true;
@@ -215,44 +213,36 @@ public class TowerFigureHandlerSystem : IDisposable
         _figureActionMessage.Publish(new(MessageFigureType.figure_out));
     }
 
-    /*public void LoadFigure(FigureSaveData figureData)
-    {
-        var figure = _figureProvider.GetFigureById(figureData.SpriteId);
-
-        if (figure == null)
-        {
-            Debug.LogError($"Не удалось загрузить фигуру с ID {figureData.SpriteId}");
-            return;
-        }
-
-        var draggingObject = _gameFactory.Instantiate(figure.DraggingObjectPrefab, _parent);
-
-        if (draggingObject == null)
-        {
-            Debug.LogError("Ошибка при создании DraggingObject");
-            return;
-        }
-
-        draggingObject.transform.SetParent(_parent, worldPositionStays: true);
-        draggingObject.RectTransform.anchoredPosition = new Vector2(figureData.X, figureData.Y);
-        draggingObject.IsFigureInTower = true;
-
-        _stackedObjects.Add(draggingObject);
-    }
-
     private void SaveTower()
     {
-        _saveSystem.Save();
+        _saveSystem.SaveTower(_stackedObjects, _maxHeight.Value, _currentTowerHeight.Value);
     }
 
-    private void LoadTower()
+    public void LoadTowerData(DraggingObject draggingObject, Transform parent, Canvas canvas)
     {
-        _saveSystem.Load();
+        TowerSaveData data = _saveSystem.LoadTower();
+
+        _maxHeight.Value = data.MaxHeight;
+        _currentTowerHeight.Value = data.CurrentTowerHeight;
+
+        foreach (var figureData in data.Figures)
+        {
+            DraggingObject newFigure = _gameFactory.Instantiate(draggingObject, parent);
+            newFigure.Image.sprite = _figureProvider.GetFigures()
+                .SelectMany(f => f.Sprites)
+                .FirstOrDefault(s => s.Id == figureData.SpriteName)?.Sprite;
+
+            newFigure.MainCanvas = canvas;
+
+            newFigure.RectTransform.anchoredPosition = new Vector3(figureData.X, figureData.Y, 0);
+
+            _stackedObjects.Add(newFigure);
+        }
     }
 
-    public void ClearTower()
+    private void ClearTower()
     {
-        _saveSystem.Reset();
+        _saveSystem.ResetSave();
 
         foreach (var figure in _stackedObjects)
             figure.DestroyWithAnimation();
@@ -263,5 +253,5 @@ public class TowerFigureHandlerSystem : IDisposable
         _maxHeight.Value = 0;
 
         SaveTower();
-    }*/
+    }
 }
